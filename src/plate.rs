@@ -201,7 +201,11 @@ mod tests {
             assert_eq!(x.velocity, y.velocity);
             assert_eq!(x.crust_type, y.crust_type);
         }
-        assert!(a.iter().zip(c.iter()).any(|(x, y)| x.position != y.position));
+        assert!(
+            a.iter()
+                .zip(c.iter())
+                .any(|(x, y)| x.position != y.position)
+        );
     }
 
     #[test]
@@ -245,7 +249,10 @@ mod tests {
         }
         // Roughly - not exactly - the requested share, since plates are a
         // sample of the field rather than a partition of it.
-        let cont = plates.iter().filter(|p| p.crust_type.is_continental()).count();
+        let cont = plates
+            .iter()
+            .filter(|p| p.crust_type.is_continental())
+            .count();
         assert!((6..=22).contains(&cont), "{cont} of 40 plates continental");
     }
 
@@ -276,7 +283,11 @@ mod tests {
             },
         ];
         advance(&mut plates, &w, 1.0);
-        assert!(plates[0].position.x < 1.0, "should have wrapped: {:?}", plates[0].position);
+        assert!(
+            plates[0].position.x < 1.0,
+            "should have wrapped: {:?}",
+            plates[0].position
+        );
         assert!(plates[1].position.y >= 0.0);
         assert!(plates[1].velocity.y > 0.0, "wall should reflect velocity");
     }
@@ -284,13 +295,32 @@ mod tests {
     #[test]
     fn best_candidate_spacing_beats_pure_random() {
         let w = world();
-        let spaced = make_plates(&w, &PlateParams { spacing_candidates: 32, ..Default::default() }, 11);
-        let clumped = make_plates(&w, &PlateParams { spacing_candidates: 1, ..Default::default() }, 11);
+        let spaced = make_plates(
+            &w,
+            &PlateParams {
+                spacing_candidates: 32,
+                ..Default::default()
+            },
+            11,
+        );
+        let clumped = make_plates(
+            &w,
+            &PlateParams {
+                spacing_candidates: 1,
+                ..Default::default()
+            },
+            11,
+        );
         let min_gap = |ps: &Vec<Plate>| {
             let mut m = f32::MAX;
             for i in 0..ps.len() {
                 for j in (i + 1)..ps.len() {
-                    m = m.min(w.dist2(ps[i].position.x, ps[i].position.y, ps[j].position.x, ps[j].position.y));
+                    m = m.min(w.dist2(
+                        ps[i].position.x,
+                        ps[i].position.y,
+                        ps[j].position.x,
+                        ps[j].position.y,
+                    ));
                 }
             }
             m

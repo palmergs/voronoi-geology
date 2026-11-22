@@ -89,36 +89,39 @@ impl Erosion {
     }
 
     /// Stream-power incision: `k * discharge^m * slope^n`, clamped for stability.
-    fn incise(&mut self, world: &mut World, net: &FlowNetwork, dt: f32, budget: &mut ErosionBudget) {
+    fn incise(
+        &mut self,
+        world: &mut World,
+        net: &FlowNetwork,
+        dt: f32,
+        budget: &mut ErosionBudget,
+    ) {
         let p = &self.params;
         let sea = self.sea_level;
         let elevation = &world.elevation;
         let flow = &world.flow;
         let water = &world.water;
 
-        self.cut
-            .par_iter_mut()
-            .enumerate()
-            .for_each(|(idx, cut)| {
-                *cut = 0.0;
-                let r = net.receiver[idx];
-                // No rivers below sea level, and none inside a lake - still
-                // water does not incise.
-                if r < 0 || elevation[idx] <= sea || water[idx] > 0.0 {
-                    return;
-                }
-                let r = r as usize;
-                let drop = elevation[idx] - elevation[r];
-                if drop <= 0.0 {
-                    return;
-                }
-                let slope = drop / step_distance(world, idx, r);
-                let e = p.incision
-                    * flow[idx].max(0.0).powf(p.area_exponent)
-                    * slope.powf(p.slope_exponent)
-                    * dt;
-                *cut = e.min(drop * p.max_incision_fraction);
-            });
+        self.cut.par_iter_mut().enumerate().for_each(|(idx, cut)| {
+            *cut = 0.0;
+            let r = net.receiver[idx];
+            // No rivers below sea level, and none inside a lake - still
+            // water does not incise.
+            if r < 0 || elevation[idx] <= sea || water[idx] > 0.0 {
+                return;
+            }
+            let r = r as usize;
+            let drop = elevation[idx] - elevation[r];
+            if drop <= 0.0 {
+                return;
+            }
+            let slope = drop / step_distance(world, idx, r);
+            let e = p.incision
+                * flow[idx].max(0.0).powf(p.area_exponent)
+                * slope.powf(p.slope_exponent)
+                * dt;
+            *cut = e.min(drop * p.max_incision_fraction);
+        });
 
         for idx in 0..world.len() {
             let c = self.cut[idx];
@@ -398,8 +401,15 @@ mod tests {
         for _ in 0..20 {
             erosion.diffuse(&mut world, 1.0);
         }
-        assert!(world.elevation[peak] < 8.0, "spike survived: {}", world.elevation[peak]);
-        assert!(world.elevation[world.idx(15, 16)] > 1.0, "material went nowhere");
+        assert!(
+            world.elevation[peak] < 8.0,
+            "spike survived: {}",
+            world.elevation[peak]
+        );
+        assert!(
+            world.elevation[world.idx(15, 16)] > 1.0,
+            "material went nowhere"
+        );
     }
 
     #[test]

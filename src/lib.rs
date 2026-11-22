@@ -7,15 +7,15 @@
 //! through a narrow distance falloff so features stay legible at this
 //! resolution. Small, local, repeated - never large, global, instantaneous.
 
+pub mod boundary;
+pub mod erosion;
+pub mod hydrology;
 pub mod math;
 pub mod noise;
 pub mod plate;
+pub mod query;
+pub mod render;
+pub mod simulation;
+pub mod tectonics;
 pub mod voronoi;
 pub mod world;
-pub mod boundary;
-pub mod tectonics;
-pub mod hydrology;
-pub mod erosion;
-pub mod simulation;
-pub mod render;
-pub mod query;

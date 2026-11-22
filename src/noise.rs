@@ -171,8 +171,7 @@ mod tests {
                 }
             }
             let mean = values.iter().sum::<f32>() / values.len() as f32;
-            let sd = (values.iter().map(|v| (v - mean).powi(2)).sum::<f32>()
-                / values.len() as f32)
+            let sd = (values.iter().map(|v| (v - mean).powi(2)).sum::<f32>() / values.len() as f32)
                 .sqrt();
             let peak = values.iter().fold(0.0f32, |a, v| a.max(v.abs()));
 

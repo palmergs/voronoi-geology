@@ -307,11 +307,7 @@ fn hsv(h: f32, s: f32, v: f32) -> [u8; 3] {
         4 => (t, p, v),
         _ => (v, p, q),
     };
-    [
-        (r * 255.0) as u8,
-        (g * 255.0) as u8,
-        (b * 255.0) as u8,
-    ]
+    [(r * 255.0) as u8, (g * 255.0) as u8, (b * 255.0) as u8]
 }
 
 // --- drawing --------------------------------------------------------------
@@ -514,10 +510,15 @@ mod tests {
     #[test]
     fn drawing_wraps_across_the_seam_instead_of_panicking() {
         let mut img = RgbImage::new(32, 16);
-        draw_arrow(&mut img, Vec2::new(31.0, 8.0), Vec2::new(40.0, 8.0), [255, 0, 0], 1.0);
+        draw_arrow(
+            &mut img,
+            Vec2::new(31.0, 8.0),
+            Vec2::new(40.0, 8.0),
+            [255, 0, 0],
+            1.0,
+        );
         draw_disc(&mut img, Vec2::new(0.0, 0.0), 3.0, [0, 255, 0]);
         assert_eq!(img.get_pixel(8, 8), &Rgb([255, 0, 0]));
         assert_eq!(img.get_pixel(30, 0), &Rgb([0, 255, 0]));
     }
-
 }

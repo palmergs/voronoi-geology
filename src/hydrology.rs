@@ -109,8 +109,7 @@ impl Hydrology {
                     let up = world
                         .neighbor(x, y, -wind.x.signum() as i64, 0)
                         .unwrap_or(idx);
-                    let climb =
-                        world.elevation[idx] - world.elevation[up].max(self.sea_level);
+                    let climb = world.elevation[idx] - world.elevation[up].max(self.sea_level);
                     if climb > 0.0 {
                         rain *= 1.0 + p.orographic_gain * smoothstep(0.0, 2.5, climb);
                     } else {
@@ -320,8 +319,7 @@ mod tests {
         for i in 0..world.len() {
             let (x, y) = world.coords(i);
             // Lumpy terrain with plenty of closed basins.
-            world.elevation[i] =
-                2.0 + ((x as f32 * 0.3).sin() * (y as f32 * 0.4).cos()) * 1.5;
+            world.elevation[i] = 2.0 + ((x as f32 * 0.3).sin() * (y as f32 * 0.4).cos()) * 1.5;
         }
         let h = hydro();
         let net = routed(&mut world, &h);
@@ -332,7 +330,10 @@ mod tests {
             while cur >= 0 {
                 cur = net.receiver[cur as usize];
                 hops += 1;
-                assert!(hops <= world.len(), "cycle in the drainage network from {start}");
+                assert!(
+                    hops <= world.len(),
+                    "cycle in the drainage network from {start}"
+                );
             }
         }
     }
@@ -351,7 +352,11 @@ mod tests {
         let net = routed(&mut world, &h);
 
         let centre = world.idx(24, 24);
-        assert!(world.water[centre] > 2.0, "basin should hold water: {}", world.water[centre]);
+        assert!(
+            world.water[centre] > 2.0,
+            "basin should hold water: {}",
+            world.water[centre]
+        );
         assert!(
             (net.filled[centre] - 3.0).abs() < 0.05,
             "basin should fill to the rim, got {}",
@@ -427,7 +432,10 @@ mod tests {
             cur = net.receiver[cur as usize];
             hops += 1;
         }
-        assert!(crossed, "water at x=63 never found the valley across the seam");
+        assert!(
+            crossed,
+            "water at x=63 never found the valley across the seam"
+        );
         assert!(net.receiver[west_of_seam] >= 0);
     }
 
@@ -447,7 +455,10 @@ mod tests {
         let equator = row_mean(90);
         let subtropics = row_mean(120); // about 30 degrees south
         let pole = row_mean(178);
-        assert!(equator > subtropics * 1.5, "equator {equator} vs subtropics {subtropics}");
+        assert!(
+            equator > subtropics * 1.5,
+            "equator {equator} vs subtropics {subtropics}"
+        );
         assert!(equator > pole, "equator {equator} vs pole {pole}");
     }
 

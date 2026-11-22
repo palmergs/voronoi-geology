@@ -229,16 +229,14 @@ impl Tectonics {
                 match (crust_a, crust_b) {
                     // Continent meets continent: no subduction, just a broad
                     // mountain belt lifting both sides (section 7.1).
-                    (CrustType::Continental, CrustType::Continental) => Effect::uplift(
-                        p.collision_rate * strength * falloff(d, p.collision_radius),
-                    ),
+                    (CrustType::Continental, CrustType::Continental) => {
+                        Effect::uplift(p.collision_rate * strength * falloff(d, p.collision_radius))
+                    }
                     _ => {
                         let downgoing = subducting_plate(b, plates, plate_age);
                         if own == downgoing {
                             // Trench: narrow, deep, on the downgoing side.
-                            Effect::uplift(
-                                -p.trench_rate * strength * falloff(d, p.trench_radius),
-                            )
+                            Effect::uplift(-p.trench_rate * strength * falloff(d, p.trench_radius))
                         } else {
                             // Overriding side: broad uplift, plus a volcanic
                             // arc set back from the trench.
@@ -268,8 +266,7 @@ impl Tectonics {
                 let delta = if oceanic {
                     strength * (axis * 1.4 - basin * 0.5)
                 } else {
-                    let shoulders =
-                        p.shoulder_rate * bump(d, p.shoulder_offset, p.shoulder_sigma);
+                    let shoulders = p.shoulder_rate * bump(d, p.shoulder_offset, p.shoulder_sigma);
                     strength * (axis * 0.5 - basin + shoulders)
                 };
                 Effect {
@@ -500,7 +497,10 @@ mod tests {
         let flat = Warp::none(&world);
         voronoi::assign(&mut world, &plates, &flat);
         for (i, e) in world.elevation.iter_mut().enumerate() {
-            *e = if plates[world.plate_id[i] as usize].crust_type.is_continental() {
+            *e = if plates[world.plate_id[i] as usize]
+                .crust_type
+                .is_continental()
+            {
                 0.3
             } else {
                 -4.0
@@ -552,8 +552,14 @@ mod tests {
         run(&mut world, &plates, &bs, &field, &tec, 40);
 
         // The collision is at x=40 (midway between the sites).
-        assert!(strip_change(&before, &world, 34, 40) > 0.3, "west side did not rise");
-        assert!(strip_change(&before, &world, 41, 47) > 0.3, "east side did not rise");
+        assert!(
+            strip_change(&before, &world, 34, 40) > 0.3,
+            "west side did not rise"
+        );
+        assert!(
+            strip_change(&before, &world, 41, 47) > 0.3,
+            "east side did not rise"
+        );
     }
 
     #[test]
@@ -570,7 +576,10 @@ mod tests {
 
         let ocean_side = strip_change(&before, &world, 36, 40);
         let continent_side = strip_change(&before, &world, 41, 50);
-        assert!(ocean_side < -0.1, "no trench on the oceanic side: {ocean_side}");
+        assert!(
+            ocean_side < -0.1,
+            "no trench on the oceanic side: {ocean_side}"
+        );
         assert!(
             continent_side > 0.3,
             "no uplift on the continental side: {continent_side}"
@@ -597,7 +606,10 @@ mod tests {
         };
         let axis = at(40);
         let flank = at(50);
-        assert!(axis > flank, "ridge axis {axis} should stand above flank {flank}");
+        assert!(
+            axis > flank,
+            "ridge axis {axis} should stand above flank {flank}"
+        );
     }
 
     #[test]
@@ -617,7 +629,10 @@ mod tests {
             }
             s / world.height as f32
         };
-        assert!(at(40) < at(49), "rift valley should sit below its shoulders");
+        assert!(
+            at(40) < at(49),
+            "rift valley should sit below its shoulders"
+        );
     }
 
     #[test]
@@ -655,14 +670,15 @@ mod tests {
         // a fraction of the peak, so the mountain belt reads as a belt.
         for i in 0..world.len() {
             if let Some((_, d)) = field.at(i)
-                && d >= tec.params.collision_radius * 0.5 {
-                    let moved = (world.elevation[i] - before.elevation[i]).abs();
-                    assert!(
-                        moved < peak * 0.3,
-                        "effect still at {:.0}% of peak {d:.1} cells out",
-                        moved / peak * 100.0
-                    );
-                }
+                && d >= tec.params.collision_radius * 0.5
+            {
+                let moved = (world.elevation[i] - before.elevation[i]).abs();
+                assert!(
+                    moved < peak * 0.3,
+                    "effect still at {:.0}% of peak {d:.1} cells out",
+                    moved / peak * 100.0
+                );
+            }
         }
 
         // The plate sites themselves are untouched.
@@ -675,15 +691,23 @@ mod tests {
     #[test]
     fn deformation_scales_with_relative_velocity() {
         let slow = {
-            let (mut w, p, b, f, t) =
-                setup(CrustType::Continental, CrustType::Continental, (0.05, 0.0), (-0.05, 0.0));
+            let (mut w, p, b, f, t) = setup(
+                CrustType::Continental,
+                CrustType::Continental,
+                (0.05, 0.0),
+                (-0.05, 0.0),
+            );
             let before = w.clone();
             run(&mut w, &p, &b, &f, &t, 30);
             strip_change(&before, &w, 38, 42)
         };
         let fast = {
-            let (mut w, p, b, f, t) =
-                setup(CrustType::Continental, CrustType::Continental, (0.4, 0.0), (-0.4, 0.0));
+            let (mut w, p, b, f, t) = setup(
+                CrustType::Continental,
+                CrustType::Continental,
+                (0.4, 0.0),
+                (-0.4, 0.0),
+            );
             let before = w.clone();
             run(&mut w, &p, &b, &f, &t, 30);
             strip_change(&before, &w, 38, 42)
@@ -723,7 +747,10 @@ mod tests {
         let axis = world.crust_age[world.idx(40, 24)];
         let interior = world.crust_age[world.idx(16, 24)];
         assert!(axis < 60.0, "axis crust should be young, got {axis}");
-        assert!(interior > 120.0, "interior crust should have aged, got {interior}");
+        assert!(
+            interior > 120.0,
+            "interior crust should have aged, got {interior}"
+        );
     }
 
     #[test]
@@ -735,7 +762,10 @@ mod tests {
             (-0.4, 0.0),
         );
         let _ = world;
-        let b = bs.iter().find(|b| b.kind == BoundaryKind::Convergent).unwrap();
+        let b = bs
+            .iter()
+            .find(|b| b.kind == BoundaryKind::Convergent)
+            .unwrap();
         assert_eq!(subducting_plate(b, &plates, &[10.0, 90.0]), 1);
         assert_eq!(subducting_plate(b, &plates, &[90.0, 10.0]), 0);
     }
@@ -748,7 +778,10 @@ mod tests {
             (0.4, 0.0),
             (-0.4, 0.0),
         );
-        let b = bs.iter().find(|b| b.kind == BoundaryKind::Convergent).unwrap();
+        let b = bs
+            .iter()
+            .find(|b| b.kind == BoundaryKind::Convergent)
+            .unwrap();
         // Even if the continental plate is far older.
         assert_eq!(subducting_plate(b, &plates, &[1.0, 500.0]), 0);
     }

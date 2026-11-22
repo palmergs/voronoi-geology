@@ -165,12 +165,7 @@ impl Simulation {
         // Starting crust age comes from its own noise field. Keying it to the
         // plate instead would stamp the Voronoi polygons into the sea floor
         // through age-driven subsidence.
-        let age_field = CylinderNoise::new(
-            (params.seed as u32) ^ 0x_A6E5,
-            params.width,
-            180.0,
-            3,
-        );
+        let age_field = CylinderNoise::new((params.seed as u32) ^ 0x_A6E5, params.width, 180.0, 3);
 
         for idx in 0..world.len() {
             let (x, y) = world.coords(idx);
@@ -184,13 +179,17 @@ impl Simulation {
             // smoothed so shelves do not turn into cliffs.
             let texture = 0.6 * shape.get(fx, fy) + 0.4 * relief.get(fx, fy);
             world.elevation[idx] = base + texture * params.terrain_noise * (0.35 + 0.65 * land);
-            world.crust_age[idx] = (0.5 + 0.5 * age_field.get(fx, fy)).clamp(0.0, 1.0)
-                * params.initial_age_spread;
+            world.crust_age[idx] =
+                (0.5 + 0.5 * age_field.get(fx, fy)).clamp(0.0, 1.0) * params.initial_age_spread;
         }
 
         let tectonics = Tectonics::new(params.tectonics, params.seed, params.width);
-        let hydrology =
-            Hydrology::new(params.hydrology, params.sea_level, params.seed, params.width);
+        let hydrology = Hydrology::new(
+            params.hydrology,
+            params.sea_level,
+            params.seed,
+            params.width,
+        );
         let erosion = Erosion::new(params.erosion, params.sea_level, world.len());
         let boundaries = boundary::detect(&world, &plates, params.transform_threshold);
         let field = boundary::nearest_boundary(&world, &boundaries, tectonics.max_radius());
@@ -258,7 +257,9 @@ impl Simulation {
         // 11. Water, on its own slower cadence.
         let mut budget = ErosionBudget::default();
         if self.params.erosion_interval > 0
-            && self.step.is_multiple_of(self.params.erosion_interval as u64)
+            && self
+                .step
+                .is_multiple_of(self.params.erosion_interval as u64)
         {
             budget = self.water_cycle();
         }
@@ -465,10 +466,12 @@ mod tests {
     fn crust_age_grows_but_spreading_centres_stay_young() {
         let mut sim = Simulation::new(small(31));
         sim.run(60);
-        let mean: f32 =
-            sim.world.crust_age.iter().sum::<f32>() / sim.world.len() as f32;
+        let mean: f32 = sim.world.crust_age.iter().sum::<f32>() / sim.world.len() as f32;
         let youngest = sim.world.crust_age.iter().cloned().fold(f32::MAX, f32::min);
         assert!(mean > 30.0, "crust should have aged: mean {mean}");
-        assert!(youngest < 10.0, "nothing is being resurfaced: youngest {youngest}");
+        assert!(
+            youngest < 10.0,
+            "nothing is being resurfaced: youngest {youngest}"
+        );
     }
 }

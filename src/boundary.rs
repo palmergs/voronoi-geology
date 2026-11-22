@@ -91,7 +91,14 @@ pub fn detect(world: &World, plates: &[Plate], transform_threshold: f32) -> Vec<
                 }
                 seen[seen_len] = b;
                 seen_len += 1;
-                out.push(classify(world, plates, idx as u32, a, b, transform_threshold));
+                out.push(classify(
+                    world,
+                    plates,
+                    idx as u32,
+                    a,
+                    b,
+                    transform_threshold,
+                ));
             }
         }
     }
@@ -155,7 +162,11 @@ fn classify(
 /// The x wrap is handled by running the row pass over three copies of the row
 /// and keeping the middle one, so the nearest source may be reached the short
 /// way around the cylinder.
-pub fn nearest_boundary(world: &World, boundaries: &[Boundary], max_radius: f32) -> NearestBoundary {
+pub fn nearest_boundary(
+    world: &World,
+    boundaries: &[Boundary],
+    max_radius: f32,
+) -> NearestBoundary {
     const INF: f32 = 1e20;
     let (w, h, n) = (world.width, world.height, world.len());
 
@@ -416,7 +427,10 @@ mod tests {
             let touches_other = world
                 .neighbors8(idx)
                 .any(|(n, _, _)| world.plate_id[n] == b.plate_b);
-            assert!(touches_other, "boundary cell is not actually adjacent to plate b");
+            assert!(
+                touches_other,
+                "boundary cell is not actually adjacent to plate b"
+            );
         }
     }
 
@@ -424,7 +438,10 @@ mod tests {
     fn boundaries_are_detected_across_the_seam() {
         let mut world = World::new(64, 16);
         // Sites at x=8 and x=40: one boundary near x=24, the other wraps at x=56.
-        let plates = vec![plate(0, (8.0, 8.0), (0.2, 0.0)), plate(1, (40.0, 8.0), (-0.2, 0.0))];
+        let plates = vec![
+            plate(0, (8.0, 8.0), (0.2, 0.0)),
+            plate(1, (40.0, 8.0), (-0.2, 0.0)),
+        ];
         let flat = Warp::none(&world);
         voronoi::assign(&mut world, &plates, &flat);
         let bs = detect(&world, &plates, 0.05);
@@ -441,7 +458,15 @@ mod tests {
     #[test]
     fn distance_field_matches_brute_force() {
         let mut world = World::new(96, 48);
-        let plates = generate(&world, &PlateParams { count: 6, ..Default::default() }, 21, &CrustField::new(&world, 21, 0.4));
+        let plates = generate(
+            &world,
+            &PlateParams {
+                count: 6,
+                ..Default::default()
+            },
+            21,
+            &CrustField::new(&world, 21, 0.4),
+        );
         let flat = Warp::none(&world);
         voronoi::assign(&mut world, &plates, &flat);
         let bs = detect(&world, &plates, 0.05);
@@ -477,7 +502,15 @@ mod tests {
     #[test]
     fn distance_field_respects_the_hard_cutoff() {
         let mut world = World::new(128, 64);
-        let plates = generate(&world, &PlateParams { count: 4, ..Default::default() }, 3, &CrustField::new(&world, 3, 0.4));
+        let plates = generate(
+            &world,
+            &PlateParams {
+                count: 4,
+                ..Default::default()
+            },
+            3,
+            &CrustField::new(&world, 3, 0.4),
+        );
         let flat = Warp::none(&world);
         voronoi::assign(&mut world, &plates, &flat);
         let bs = detect(&world, &plates, 0.05);

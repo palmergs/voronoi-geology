@@ -285,7 +285,10 @@ mod tests {
         let a = sim.sample(40, 40).elevation;
         let b = sim.sample(41, 40).elevation;
         let mid = sim.elevation_at(40.5, 40.0);
-        assert!((mid - (a + b) * 0.5).abs() < 1e-4, "{mid} is not between {a} and {b}");
+        assert!(
+            (mid - (a + b) * 0.5).abs() < 1e-4,
+            "{mid} is not between {a} and {b}"
+        );
     }
 
     #[test]

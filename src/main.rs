@@ -146,7 +146,11 @@ fn main() {
         "erosion moved {:.0} units, deposited {:.0}, exported {:.0}",
         sim.totals.eroded, sim.totals.deposited, sim.totals.exported
     );
-    println!("wrote {} layers to {}", args.layers.len(), args.out.display());
+    println!(
+        "wrote {} layers to {}",
+        args.layers.len(),
+        args.out.display()
+    );
 }
 
 fn write_layers(sim: &Simulation, layers: &[Layer], out: &Path, step: Option<u64>, quiet: bool) {
@@ -171,8 +175,7 @@ fn parse_args() -> Result<Option<Args>, String> {
 
     while let Some(arg) = argv.next() {
         let mut value = || -> Result<String, String> {
-            argv.next()
-                .ok_or_else(|| format!("{arg} needs a value"))
+            argv.next().ok_or_else(|| format!("{arg} needs a value"))
         };
 
         match arg.as_str() {
@@ -184,9 +187,7 @@ fn parse_args() -> Result<Option<Args>, String> {
             "--seed" => args.params.seed = parse(&value()?, &arg)?,
             "--steps" => args.steps = parse(&value()?, &arg)?,
             "--plates" => args.params.plates.count = parse(&value()?, &arg)?,
-            "--continental" => {
-                args.params.plates.continental_fraction = parse(&value()?, &arg)?
-            }
+            "--continental" => args.params.plates.continental_fraction = parse(&value()?, &arg)?,
             "--width" => args.params.width = parse(&value()?, &arg)?,
             "--height" => args.params.height = parse(&value()?, &arg)?,
             "--dt" => args.params.dt = parse(&value()?, &arg)?,

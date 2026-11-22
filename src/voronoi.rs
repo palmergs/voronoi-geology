@@ -55,7 +55,10 @@ impl Warp {
 
 /// Fill `world.plate_id` from the current plate sites.
 pub fn assign(world: &mut World, plates: &[Plate], warp: &Warp) {
-    assert!(!plates.is_empty(), "cannot build a Voronoi diagram with no sites");
+    assert!(
+        !plates.is_empty(),
+        "cannot build a Voronoi diagram with no sites"
+    );
 
     let width = world.width;
     let w = width as f32;
@@ -111,7 +114,15 @@ mod tests {
     #[test]
     fn every_cell_goes_to_its_nearest_site() {
         let mut world = World::new(64, 32);
-        let plates = generate(&world, &PlateParams { count: 8, ..Default::default() }, 5, &CrustField::new(&world, 5, 0.4));
+        let plates = generate(
+            &world,
+            &PlateParams {
+                count: 8,
+                ..Default::default()
+            },
+            5,
+            &CrustField::new(&world, 5, 0.4),
+        );
         let flat = Warp::none(&world);
         assign(&mut world, &plates, &flat);
 
@@ -126,7 +137,10 @@ mod tests {
                 );
                 for p in &plates {
                     let d = world.dist2(x as f32, y as f32, p.position.x, p.position.y);
-                    assert!(owner_d <= d + 1e-4, "cell ({x},{y}) claimed by the wrong plate");
+                    assert!(
+                        owner_d <= d + 1e-4,
+                        "cell ({x},{y}) claimed by the wrong plate"
+                    );
                 }
             }
         }
@@ -147,11 +161,22 @@ mod tests {
     #[test]
     fn sites_own_their_own_cell() {
         let mut world = World::new(128, 64);
-        let plates = generate(&world, &PlateParams { count: 12, ..Default::default() }, 77, &CrustField::new(&world, 77, 0.4));
+        let plates = generate(
+            &world,
+            &PlateParams {
+                count: 12,
+                ..Default::default()
+            },
+            77,
+            &CrustField::new(&world, 77, 0.4),
+        );
         let flat = Warp::none(&world);
         assign(&mut world, &plates, &flat);
         for p in &plates {
-            let idx = world.idx(p.position.x.round() as usize % 128, p.position.y.round() as usize);
+            let idx = world.idx(
+                p.position.x.round() as usize % 128,
+                p.position.y.round() as usize,
+            );
             assert_eq!(world.plate_id[idx], p.id);
         }
     }
@@ -161,7 +186,15 @@ mod tests {
         let mut plain = World::new(128, 64);
         let mut warped = World::new(128, 64);
         let crust = CrustField::new(&plain, 12, 0.4);
-        let plates = generate(&plain, &PlateParams { count: 10, ..Default::default() }, 12, &crust);
+        let plates = generate(
+            &plain,
+            &PlateParams {
+                count: 10,
+                ..Default::default()
+            },
+            12,
+            &crust,
+        );
 
         let flat = Warp::none(&plain);
 
@@ -191,7 +224,15 @@ mod tests {
         let mut plain = World::new(256, 128);
         let mut warped = World::new(256, 128);
         let crust = CrustField::new(&plain, 4, 0.4);
-        let plates = generate(&plain, &PlateParams { count: 14, ..Default::default() }, 4, &crust);
+        let plates = generate(
+            &plain,
+            &PlateParams {
+                count: 14,
+                ..Default::default()
+            },
+            4,
+            &crust,
+        );
         let flat = Warp::none(&plain);
         assign(&mut plain, &plates, &flat);
         let bent = Warp::new(&warped, 4, 10.0, 45.0);

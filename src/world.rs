@@ -121,7 +121,12 @@ impl World {
     /// The 8 neighbours of a cell, wrapping in x and clipped at the walls.
     pub fn neighbors8(&self, idx: usize) -> Neighbors8<'_> {
         let (x, y) = self.coords(idx);
-        Neighbors8 { world: self, x, y, i: 0 }
+        Neighbors8 {
+            world: self,
+            x,
+            y,
+            i: 0,
+        }
     }
 }
 
